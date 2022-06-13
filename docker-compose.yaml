@@ -1,0 +1,43 @@
+version: '3.9'
+
+services:
+
+  database:
+    build:
+      context: database/
+      dockerfile: Dockerfile
+    image: postgres
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=postgresdb
+      - shm-size=256MB
+    ports:
+      - 5432:5432
+      - 50022:22
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+  
+  application:
+    depends_on:
+      database:
+        condition: service_healthy
+    build:
+      context: application/
+      dockerfile: Dockerfile
+    image: springboot-application
+    ports:
+      - 8081:8081
+
+  
+    
