@@ -14,6 +14,7 @@ You can add your own database scripts that will run on the first initialization 
 This Application can be a small template for Springboot applications in combination with Postgres.
 Just change the jar that will be uploaded as well as the ddl and the deployment will be ready in 0 time.
 ReST endpoints: 
+
     For the Product Entity:
         - GET localhost:8081/application/products/
         
@@ -43,6 +44,7 @@ ReST endpoints:
             "title": "A TITLE",
             "description": "A DESCRIPTION"
         }
+        
         
     For the Orders Entity:
     
