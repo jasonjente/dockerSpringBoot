@@ -16,11 +16,11 @@ Just change the jar that will be uploaded as well as the ddl and the deployment 
 ReST endpoints: 
 
     For the Product Entity:
-        - GET localhost:8081/application/products/
+        - GET localhost:8081/application/api/v1/rest/products/
         
-        - GET localhost:8081/application/products/{productId}
+        - GET localhost:8081/application/api/v1/rest/products/{productId}
         
-        - GET localhost:8081/application/aproduct/
+        - GET localhost:8081/application/api/v1/rest/aproduct/
         
             returns:
         {
@@ -29,7 +29,7 @@ ReST endpoints:
             "description": "IN_STOCK"
         }  
 
-        - POST localhost:8081/application/products/ 
+        - POST localhost:8081/application/api/v1/rest/products/ 
         
         {
             "state": "IN_STOCK",
@@ -37,7 +37,7 @@ ReST endpoints:
             "description": "A DESCRIPTION"
         }
 
-        - POST localhost:8081/application/products/{productId}
+        - POST localhost:8081/application/api/v1/rest/products/{productId}
         
         {
             "state": "IN_STOCK",
@@ -48,11 +48,11 @@ ReST endpoints:
         
     For the Orders Entity:
     
-        - GET localhost:8081/application/orders/
+        - GET localhost:8081/application/api/v1/rest/orders/
         
-        - GET localhost:8081/application/orders/{orderId}
+        - GET localhost:8081/application/api/v1/rest/orders/{orderId}
         
-        - GET localhost:8081/application/aorder/
+        - GET localhost:8081/application/api/v1/rest/aorder/
         
             returns:
         {
@@ -62,7 +62,7 @@ ReST endpoints:
             "orderState": "IN_PROGRESS."
         } 
 
-        - POST localhost:8081/application/orders/ 
+        - POST localhost:8081/application/api/v1/rest/orders/ 
         
         {
             "title": "IN_STOCK",
@@ -70,7 +70,7 @@ ReST endpoints:
             "orderState": "IN_PROGRESS."
         }
 
-        - POST localhost:8081/application/orders/{orderId}
+        - POST localhost:8081/application/api/v1/rest/orders/{orderId}
         
         {
             "state": "IN_STOCK",

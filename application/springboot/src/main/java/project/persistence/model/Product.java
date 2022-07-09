@@ -1,12 +1,9 @@
 package project.persistence.model;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.persistence.*;
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
 @Entity(name="Products")
@@ -15,14 +12,13 @@ public class Product implements Serializable {
     final static Logger logger = LoggerFactory.getLogger(Product.class);
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @Column(name = "product_id")
     private Long productId;
 
-    @NotNull
     @Column(name = "state")
-    @Valid
     private String state;
+
     @Column(name = "title", nullable = false, length = 150)
     private String title;
     @Column(name = "description", length = 2000)

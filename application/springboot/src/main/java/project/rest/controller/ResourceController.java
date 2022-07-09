@@ -1,39 +1,74 @@
 package project.rest.controller;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.*;
 import project.persistence.model.Orders;
 import project.persistence.model.Product;
+import project.rest.exception.DataServiceException;
 import project.service.DataService;
 
 import java.util.List;
 
 @Controller
+@RequestMapping(path = "api/v1/rest/",
+        produces = MediaType.APPLICATION_JSON_UTF8_VALUE,
+        consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
 public class ResourceController {
-
+    Logger logger = LoggerFactory.getLogger(ResourceController.class);
     @Autowired
     DataService dataService;
-
     @GetMapping("/products")
     public ResponseEntity getAllProducts(){
-        List<Product> ret = dataService.getAllProducts();
-        return ResponseEntity.ok(ret);
+        try{
+            List<Product> ret = dataService.getAllProducts();
+            return ResponseEntity.ok(ret);
+        }catch (DataServiceException dataServiceException){
+            logger.error("Error message : {} .Is user error: {}. cause of error: " ,dataServiceException.getErrorMessage(), dataServiceException.isUserError(), dataServiceException.getCauseOfError() );
+            if(dataServiceException.isUserError()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+            }else {
+                return ResponseEntity.status(HttpStatus.BAD_GATEWAY).build();
+            }
+        }
+
+
     }
 
     @GetMapping("/products/{productId}")
     public ResponseEntity getProductById(@PathVariable("productId") Long productId){
-        return ResponseEntity.ok(dataService.getByProductId(productId));
+        try{
+            Product ret = dataService.getByProductId(productId);
+            return ResponseEntity.ok(ret);
+        }catch (DataServiceException dataServiceException){
+            logger.error("Error message : {} .Is user error: {}. cause of error: " ,dataServiceException.getErrorMessage(), dataServiceException.isUserError(), dataServiceException.getCauseOfError() );
+            if(dataServiceException.isUserError()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+            }else {
+                return ResponseEntity.status(HttpStatus.BAD_GATEWAY).build();
+            }
+        }
+
     }
 
     @PostMapping("/products")
     ResponseEntity saveAProduct(@RequestBody Product product){
-        dataService.createProduct(product);
-        return ResponseEntity.ok(product);
+       try{
+           dataService.createProduct(product);
+           return ResponseEntity.ok(product);
+       }catch (DataServiceException dataServiceException){
+           logger.error("Error message : {} .Is user error: {}. cause of error: " ,dataServiceException.getErrorMessage(), dataServiceException.isUserError(), dataServiceException.getCauseOfError() );
+           if(dataServiceException.isUserError()) {
+               return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+           }else {
+               return ResponseEntity.status(HttpStatus.BAD_GATEWAY).build();
+           }
+       }
     }
 
     @GetMapping("/aproduct/")
@@ -42,34 +77,81 @@ public class ResourceController {
         ret.setState("IN_STOCK");
         ret.setDescription("IN_STOCK");
         ret.setTitle("IN_STOCK");
+        try{
+            dataService.createProduct(ret);
+        }catch (DataServiceException dataServiceException){
+            logger.error("Error message : {} .Is user error: {}. cause of error: " ,dataServiceException.getErrorMessage(), dataServiceException.isUserError(), dataServiceException.getCauseOfError() );
+            if(dataServiceException.isUserError()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+            }else {
+                return ResponseEntity.status(HttpStatus.BAD_GATEWAY).build();
+            }
+        }
         return ResponseEntity.ok(ret);
     }
     
-    @PostMapping("/product/{productId}")
-    public ResponseEntity updateProduct(Long productId, Product product){
-        Product ret = dataService.updateProduct(productId, product);
-        return ResponseEntity.ok(ret);
+    @PostMapping("/products/{productId}")
+    public ResponseEntity updateProduct(@PathVariable Long productId,@RequestBody Product product){
+        try {
+            Product ret = dataService.updateProduct(productId, product);
+            return ResponseEntity.ok(ret);
+        }catch (DataServiceException dataServiceException){
+            logger.error("Error message : {} .Is user error: {}. cause of error: " ,dataServiceException.getErrorMessage(), dataServiceException.isUserError(), dataServiceException.getCauseOfError() );
+            if(dataServiceException.isUserError()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+            }else {
+                return ResponseEntity.status(HttpStatus.BAD_GATEWAY).build();
+            }
+        }
     }
 
     @GetMapping("/orders")
     public ResponseEntity getAllOrders(){
-        List<Orders> ret = dataService.getAllOrders();
-        return ResponseEntity.ok(ret);
+        try {
+            List<Orders> ret = dataService.getAllOrders();
+            return ResponseEntity.ok(ret);
+        }catch (DataServiceException dataServiceException){
+            logger.error("Error message : {} .Is user error: {}. cause of error: " ,dataServiceException.getErrorMessage(), dataServiceException.isUserError(), dataServiceException.getCauseOfError() );
+            if(dataServiceException.isUserError()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+            }else {
+                return ResponseEntity.status(HttpStatus.BAD_GATEWAY).build();
+            }
+        }
     }
 
     @GetMapping("/orders/{orderId}")
     public ResponseEntity getOrderById(@PathVariable("orderId") Long orderId){
-        return ResponseEntity.ok(dataService.getByOrderId(orderId));
+        try {
+            Orders ret = dataService.getByOrderId(orderId);
+            return ResponseEntity.ok(ret);
+        }catch (DataServiceException dataServiceException){
+            logger.error("Error message : {} .Is user error: {}. cause of error: " ,dataServiceException.getErrorMessage(), dataServiceException.isUserError(), dataServiceException.getCauseOfError() );
+            if(dataServiceException.isUserError()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+            }else {
+                return ResponseEntity.status(HttpStatus.BAD_GATEWAY).build();
+            }
+        }
     }
 
     @PostMapping("/orders")
-    ResponseEntity saveAOrder(@RequestBody Orders order){
-        dataService.createOrder(order);
-        return ResponseEntity.ok(order);
+    ResponseEntity saveAnOrder(@RequestBody Orders order){
+        try {
+            dataService.createOrder(order);
+            return ResponseEntity.ok(order);
+        }catch (DataServiceException dataServiceException){
+            logger.error("Error message : {} .Is user error: {}. cause of error: " ,dataServiceException.getErrorMessage(), dataServiceException.isUserError(), dataServiceException.getCauseOfError() );
+            if(dataServiceException.isUserError()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+            }else {
+                return ResponseEntity.status(HttpStatus.BAD_GATEWAY).build();
+            }
+        }
     }
 
     @GetMapping("/aorder/")
-    public ResponseEntity getOrder(Long orderId){
+    public ResponseEntity getOrder(){
         Orders ret = new Orders();
         ret.setDescription("IN_STOCK");
         ret.setTitle("IN_STOCK");
@@ -77,9 +159,18 @@ public class ResourceController {
         return ResponseEntity.ok(ret);
     }
 
-    @PostMapping("/order/{orderId}")
-    public ResponseEntity updateOrder(Long orderId, Orders order){
-        Orders ret = dataService.updateOrder(orderId, order);
-        return ResponseEntity.ok(ret);
+    @PostMapping("/orders/{orderId}")
+    public ResponseEntity updateOrder(@PathVariable("orderId") Long orderId,@RequestBody Orders order){
+        try {
+            Orders ret = dataService.updateOrder(orderId, order);
+            return ResponseEntity.ok(ret);
+        }catch (DataServiceException dataServiceException){
+            logger.error("Error message : {} .Is user error: {}. cause of error: " ,dataServiceException.getErrorMessage(), dataServiceException.isUserError(), dataServiceException.getCauseOfError() );
+            if(dataServiceException.isUserError()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+            }else {
+                return ResponseEntity.status(HttpStatus.BAD_GATEWAY).build();
+            }
+        }
     }
 }
