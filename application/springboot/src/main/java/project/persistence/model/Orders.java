@@ -5,8 +5,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import javax.persistence.*;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
@@ -22,15 +20,15 @@ public class Orders implements Serializable {
     @Column(name = "order_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long orderId;
-    @NotNull
-    @Size(min=2, message="Title cannot be empty, it needs to contain at least one character.")
+
     @Column(name = "title", nullable = false, length = 150)
     private String title;
 
     @Column(name = "description", length = 2000)
     private String description;
 
-    @OneToMany(fetch = FetchType.LAZY)
+    @OneToMany(fetch = FetchType.EAGER)
+    @Column(name = "products", nullable = false)
     private Set<Product> orderProducts = new HashSet<>();
 
     @Column(name="order_state")
@@ -60,11 +58,11 @@ public class Orders implements Serializable {
         this.description = description;
     }
     @JsonIgnore
-    public Set<Product> getOrderTasks() {
+    public Set<Product> getOrderProducts() {
         return orderProducts;
     }
 
-    public void setOrderTasks(Set<Product> orderProducts) {
+    public void setOrderProducts(Set<Product> orderProducts) {
         this.orderProducts = orderProducts;
     }
 
@@ -75,7 +73,15 @@ public class Orders implements Serializable {
     public void setOrderState(String order_state) {
         this.orderState = order_state;
     }
-    public String toString(){
-            return "Order id : " + this.getOrderId().toString() + ",\n title: " + this.getTitle() + ",\n description: " + this.getDescription() + "\n number of tasks remaining :" + this.getOrderTasks().size();
+
+    @Override
+    public String toString() {
+        return "Orders{" +
+                "orderId=" + orderId +
+                ", title='" + title + '\'' +
+                ", description='" + description + '\'' +
+                ", orderProducts=" + orderProducts +
+                ", orderState='" + orderState + '\'' +
+                '}';
     }
 }
