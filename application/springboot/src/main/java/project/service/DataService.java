@@ -1,5 +1,6 @@
 package project.service;
 
+import project.persistence.model.OrderItem;
 import project.persistence.model.Orders;
 import project.persistence.model.Product;
 
@@ -27,4 +28,11 @@ public interface DataService {
 
     Orders createOrder(Orders orders);
 
+    OrderItem createOrderItem(OrderItem orderItem);
+
+    OrderItem getOrderItemById(Long id);
+
+    List<OrderItem> getAllOrderItemsForOrderId(Long orderId);
+
+    OrderItem updateOrderItem(Long itemId, OrderItem newOrderItem);
 }

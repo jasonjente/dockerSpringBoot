@@ -10,12 +10,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.json.JsonParseException;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import project.persistence.dao.ProductRepository;
@@ -58,22 +55,22 @@ public class ResourceControllerTest {
     @Before
     public void init(){
         product = new Product();
-        product.setKey(1L);
+        product.setProductId(1L);
         product.setState("IN_STOCK");
         product.setDescription("A product 1 description.");
-        product.setTitle("A product 1 title.");
+        product.setProductName("A product 1 title.");
 
         product2 = new Product();
-        product2.setKey(2L);
+        product2.setProductId(2L);
         product2.setState("IN_STOCK");
         product2.setDescription("A product 2 description.");
-        product2.setTitle("A product 2 title.");
+        product2.setProductName("A product 2 title.");
 
         product3 = new Product();
-        product3.setKey(3L);
+        product3.setProductId(3L);
         product3.setState("IN_STOCK");
         product3.setDescription("A product 3 description.");
-        product3.setTitle("A product 3 title.");
+        product3.setProductName("A product 3 title.");
         productList = new ArrayList<>(Arrays.asList(product, product2, product3));
 
         mvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();

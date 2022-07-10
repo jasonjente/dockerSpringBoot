@@ -4,25 +4,33 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import project.persistence.dao.CustomerRepository;
+import project.persistence.dao.OrderItemRepository;
 import project.persistence.dao.OrderRepository;
 import project.persistence.dao.ProductRepository;
+import project.persistence.model.OrderItem;
 import project.persistence.model.Orders;
 import project.persistence.model.Product;
 import project.service.DataService;
 import project.rest.exception.DataServiceException;
 
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 @Service
 public class DataServiceImpl implements DataService {
-    final static Logger logger = LoggerFactory.getLogger(DataServiceImpl.class);
-
+    static final Logger logger = LoggerFactory.getLogger(DataServiceImpl.class);
     @Autowired
-    OrderRepository orderRepository;
-
+    private OrderRepository orderRepository;
     @Autowired
-    ProductRepository productRepository;
+    private ProductRepository productRepository;
+    @Autowired
+    private OrderItemRepository orderItemRepository;
+    @Autowired
+    private CustomerRepository customerRepository;
+
 
     @Override
     public List<Product> getAllProducts() {
@@ -97,7 +105,7 @@ public class DataServiceImpl implements DataService {
             throw new DataServiceException(errorMessage, causeOfError, isUserError);
         }
 
-        if(product.getTitle() == null){
+        if(product.getProductName() == null){
             String errorMessage = "The field title cannot be empty.";
             String causeOfError = "Empty title.";
             boolean isUserError = true;
@@ -109,18 +117,21 @@ public class DataServiceImpl implements DataService {
     @Override
     public Product updateProduct(Long productID, Product newProduct) {
         logger.info("updateProduct() - Enter ");
-
-        Optional<Product> optInDB = productRepository.findById(productID);
-        if(optInDB.isPresent()){
-            Product inDb = optInDB.get();
-            validateProduct(newProduct);
-            newProduct.setKey(inDb.getProductId());
-            productRepository.save(newProduct);
+        validateProduct(newProduct);
+        Optional<Product> productInDB = productRepository.findById(productID);
+        if(productInDB.isPresent()){
+            Product pr = new Product();
+            pr.setPrice(newProduct.getPrice());
+            pr.setProductCode(newProduct.getProductCode());
+            pr.setState(newProduct.getState());
+            pr.setDescription(newProduct.getDescription());
+            pr.setProductName(newProduct.getProductName());
+            productRepository.save(pr);
             logger.info("updateProduct() - Leave ");
-            return inDb;
+            return pr;
         }else {
-            logger.warn("updateProduct() - product didn't exist - Leave ");
-            return createProduct(newProduct);
+            productRepository.save(newProduct);
+            return newProduct;
         }
     }
 
@@ -178,9 +189,73 @@ public class DataServiceImpl implements DataService {
         logger.info("createOrder() - Enter ");
         validateOrder(orders);
         logger.info("createOrder() - Leave ");
+        //todo: temporary for products will use FK in the future for retrieval of items
+        for(OrderItem orderItem: orders.getOrderItems()) {
+            createProduct(orderItem.getProduct());
+            createOrderItem(orderItem);
+        }
         return orderRepository.save(orders);
     }
 
+    @Override
+    public OrderItem createOrderItem(OrderItem orderItem) {
+        logger.info("createOrderItem() - Enter ");
+        validateOrderItem(orderItem);
+        logger.info("createOrderItem() - Leave ");
+        return orderItemRepository.save(orderItem);
+    }
+
+    @Override
+    public OrderItem getOrderItemById(Long id) {
+        logger.info("getOrderItemById() - Enter ");
+        Optional<OrderItem> ret = orderItemRepository.findById(id);
+        if(ret.isPresent()){
+            logger.info("getOrderItemById() - Leave ");
+            return ret.get();
+        }else {
+            String errorMessage = "No order item found for id :" + id+".";
+            String causeOfError = "Unknown order id.";
+            boolean isUserError = true;
+            logger.error("getOrderItemById() - ERROR :" + errorMessage + " " + causeOfError + ". Is user-error: " + isUserError);
+            throw new DataServiceException(errorMessage, causeOfError, isUserError);
+        }
+    }
+
+    @Override
+    public List<OrderItem> getAllOrderItemsForOrderId(Long orderId) {
+        logger.info("getAllOrderItemsForOrderId() - Enter ");
+        Orders orders = getByOrderId(orderId);
+        if(orders==null){
+            String errorMessage = "No orders found for this id.";
+            String causeOfError = "Either Empty database or miss-configured";
+            boolean isUserError = false;
+            logger.error(errorMessage + " " + causeOfError + ". Is user-error: " + isUserError);
+            throw new DataServiceException(errorMessage, causeOfError, isUserError);
+        }
+        List<OrderItem> orderItems = new ArrayList<>(orders.getOrderItems());
+        logger.info("getAllOrderItemsForOrderId() - Leave ");
+        return orderItems;
+    }
+
+    @Override
+    public OrderItem updateOrderItem(Long itemId, OrderItem newOrderItem) {
+        logger.info("updateOrderItem() - Enter ");
+        Optional<OrderItem> optInDB = orderItemRepository.findById(itemId);
+        if(optInDB.isPresent()){
+            OrderItem inDb = optInDB.get();
+            validateOrderItem(newOrderItem);
+            newOrderItem.setId(inDb.getId());
+            orderItemRepository.save(newOrderItem);
+            logger.info("updateOrderItem() - Leave ");
+            return inDb;
+        }else {
+            String errorMessage = "No order item found for this id.";
+            String causeOfError = "Invalid key.";
+            boolean isUserError = true;
+            logger.error(errorMessage + " " + causeOfError + ". Is user-error: " + isUserError);
+            throw new DataServiceException(errorMessage, causeOfError, isUserError);
+        }
+    }
     @Override
     public Orders updateOrder(Long orderID, Orders newOrders) {
         logger.info("updateOrder() - Enter ");
@@ -199,21 +274,70 @@ public class DataServiceImpl implements DataService {
     }
 
     private void validateOrder(Orders newOrders) {
-        if(newOrders.getDescription().isEmpty()){
-            String errorMessage = "The field description cannot be empty.";
-            String causeOfError = "Empty description.";
-            boolean isUserError = true;
-            logger.error(errorMessage + " " + causeOfError + ". Is user-error: " + isUserError);
-            throw new DataServiceException(errorMessage, causeOfError, isUserError);
-        }
+        validateCustomerData(newOrders);
 
-        if(newOrders.getTitle().isEmpty()){
-            String errorMessage = "The field title cannot be empty.";
-            String causeOfError = "Empty description.";
+        if(newOrders.getOrderItems().isEmpty()){
+            String errorMessage = "No order items detected.";
+            String causeOfError = "Empty order item set.";
             boolean isUserError = true;
             logger.error(errorMessage + " " + causeOfError + ". Is user-error: " + isUserError);
             throw new DataServiceException(errorMessage, causeOfError, isUserError);
         }
     }
+
+    private void validateCustomerData(Orders newOrders) {
+        if(newOrders.getRecipientAddress().isEmpty()){
+            String errorMessage = "The field address cannot be empty.";
+            String causeOfError = "Empty address.";
+            boolean isUserError = true;
+            logger.error(errorMessage + " " + causeOfError + ". Is user-error: " + isUserError);
+            throw new DataServiceException(errorMessage, causeOfError, isUserError);
+        }
+
+        if(newOrders.getRecipientEmail().isEmpty()){
+            String errorMessage = "The field email cannot be empty.";
+            String causeOfError = "Empty email.";
+            boolean isUserError = true;
+            logger.error(errorMessage + " " + causeOfError + ". Is user-error: " + isUserError);
+            throw new DataServiceException(errorMessage, causeOfError, isUserError);
+        }//else{
+        //checkIfEmailIsValid(email);
+        //}
+        if(newOrders.getRecipientFirstName().isEmpty()|| newOrders.getRecipientLastName().isEmpty()){
+            String errorMessage = "The first name or last name cannot be empty.";
+            String causeOfError = "Empty first name or last name.";
+            boolean isUserError = true;
+            logger.error(errorMessage + " " + causeOfError + ". Is user-error: " + isUserError);
+            throw new DataServiceException(errorMessage, causeOfError, isUserError);
+        }
+    }
+
+    private void validateOrderItem(OrderItem orderItem) {
+        if(orderItem == null){
+            String errorMessage = "User inserted a Null order item.";
+            String causeOfError = "Null order item.";
+            boolean isUserError = true;
+            logger.error(errorMessage + " " + causeOfError + ". Is user-error: " + isUserError);
+            throw new DataServiceException(errorMessage, causeOfError, isUserError);
+        }
+        if(orderItem.getQuantity()<=0){
+            String errorMessage = "The quantity cannot be 0 or less.";
+            String causeOfError = "Added 0 items.";
+            boolean isUserError = true;
+            logger.error(errorMessage + " " + causeOfError + ". Is user-error: " + isUserError);
+            throw new DataServiceException(errorMessage, causeOfError, isUserError);
+        }
+
+        if(orderItem.getProduct()==null){
+            String errorMessage = "No product was added.";
+            String causeOfError = "Added no products.";
+            boolean isUserError = true;
+            logger.error(errorMessage + " " + causeOfError + ". Is user-error: " + isUserError);
+            throw new DataServiceException(errorMessage, causeOfError, isUserError);
+        }
+    }
+
+
+
 }
 

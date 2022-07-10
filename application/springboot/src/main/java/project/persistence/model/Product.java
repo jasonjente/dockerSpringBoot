@@ -9,7 +9,7 @@ import java.io.Serializable;
 @Entity(name="Products")
 @Table(name="products")
 public class Product implements Serializable {
-    final static Logger logger = LoggerFactory.getLogger(Product.class);
+    private static final Logger logger = LoggerFactory.getLogger(Product.class);
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
@@ -20,12 +20,34 @@ public class Product implements Serializable {
     private String state;
 
     @Column(name = "title", nullable = false, length = 150)
-    private String title;
+    private String productName;
     @Column(name = "description", length = 2000)
     private String description;
 
-    public Product(){
-        logger.info(" A new product was created. ");
+    @Column(name = "PRODUCT_CODE", nullable = false, length = 100)
+    private String productCode;
+
+    @Column(name = "price")
+    private Double price;
+
+    public Product() {
+    }
+
+    public Product(Long productId, String state, String productName, String description, String productCode, Double price) {
+        this.productId = productId;
+        this.state = state;
+        this.productName = productName;
+        this.description = description;
+        this.productCode = productCode;
+        this.price = price;
+    }
+
+    public Double getPrice() {
+        return price;
+    }
+
+    public void setPrice(Double price) {
+        this.price = price;
     }
 
     public Long getProductId() {
@@ -35,21 +57,29 @@ public class Product implements Serializable {
         return state;
     }
 
-    public void setKey(long key){
-        this.productId = key;
-    }
-
     public void setState(String state) {
-        logger.info("Changed state to: "+ state );
+        logger.info("Changed state to: {}", state );
         this.state = state;
     }
 
-    public String getTitle() {
-        return title;
+    public void setProductId(Long productId) {
+        this.productId = productId;
     }
 
-    public void setTitle(String title) {
-        this.title = title;
+    public String getProductCode() {
+        return productCode;
+    }
+
+    public void setProductCode(String productCode) {
+        this.productCode = productCode;
+    }
+
+    public String getProductName() {
+        return productName;
+    }
+
+    public void setProductName(String productName) {
+        this.productName = productName;
     }
 
     public String getDescription() {
@@ -62,6 +92,6 @@ public class Product implements Serializable {
 
     public String toString(){
         return "Product ID: " +getProductId() + ", state: " + getState() +
-                ", title: " + getTitle() + ", description: " + getDescription();
+                ", title: " + getProductName() + ", description: " + getDescription();
     }
 }

@@ -1,19 +1,15 @@
 package project.persistence.model;
 
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import javax.persistence.*;
 import java.io.Serializable;
-import java.util.HashSet;
 import java.util.Set;
 
 
 @Entity(name = "orders")
 @Table(name = "orders")
 public class Orders implements Serializable {
-    final static Logger logger = LoggerFactory.getLogger(Orders.class);
+
     private static final long serialVersionUID = 1L;
 
     @Id
@@ -21,18 +17,56 @@ public class Orders implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long orderId;
 
-    @Column(name = "title", nullable = false, length = 150)
-    private String title;
+    @Column(name = "RECIPIENT_FIRST_NAME", nullable = false, length = 50)
+    private String recipientFirstName;
 
-    @Column(name = "description", length = 2000)
-    private String description;
+    @Column(name = "RECIPIENT_LAST_NAME", nullable = false, length = 50)
+    private String recipientLastName;
 
-    @OneToMany(fetch = FetchType.EAGER)
-    @Column(name = "products", nullable = false)
-    private Set<Product> orderProducts = new HashSet<>();
+    @Column(name = "RECIPIENT_ADDRESS", length = 2000)
+    private String recipientAddress;
 
-    @Column(name="order_state")
+    @Column(name = "RECIPIENT_EMAIL", nullable = false, length = 120)
+    private String recipientEmail;
+
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
+    private Set<OrderItem> orderItems;
+
+    @Column(name = "order_state")
     private String orderState;
+
+    @Column(name = "TOTAL")
+    private Double total;
+
+    public Double getTotal() {
+        return total;
+    }
+
+    public void calculateTotal() {
+        Double currentTotal = 0D;
+        for(OrderItem orderItem :orderItems){
+            Integer quantity = orderItem.getQuantity();
+            Double price = orderItem.getProduct().getPrice();
+            currentTotal += price*quantity;
+        }
+
+        this.total = currentTotal;
+    }
+
+    public Orders(Long orderId, String recipientFirstName, String recipientLastName, String recipientAddress,
+                  String recipientEmail, Set<OrderItem> orderItems, String orderState, Double total) {
+        this.orderId = orderId;
+        this.recipientFirstName = recipientFirstName;
+        this.recipientLastName = recipientLastName;
+        this.recipientAddress = recipientAddress;
+        this.recipientEmail = recipientEmail;
+        this.orderItems = orderItems;
+        this.orderState = orderState;
+        this.total = total;
+    }
+
+    public Orders() {
+    }
 
     public Long getOrderId() {
         return orderId;
@@ -42,46 +76,56 @@ public class Orders implements Serializable {
         this.orderId = orderId;
     }
 
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-    @JsonIgnore
-    public Set<Product> getOrderProducts() {
-        return orderProducts;
-    }
-
-    public void setOrderProducts(Set<Product> orderProducts) {
-        this.orderProducts = orderProducts;
-    }
-
     public String getOrderState() {
         return orderState;
     }
 
-    public void setOrderState(String order_state) {
-        this.orderState = order_state;
+    public void setOrderState(String orderState) {
+        this.orderState = orderState;
     }
 
-    @Override
-    public String toString() {
-        return "Orders{" +
-                "orderId=" + orderId +
-                ", title='" + title + '\'' +
-                ", description='" + description + '\'' +
-                ", orderProducts=" + orderProducts +
-                ", orderState='" + orderState + '\'' +
-                '}';
+    public String getRecipientFirstName() {
+        return recipientFirstName;
+    }
+
+    public void setRecipientFirstName(String recipientFirstName) {
+        this.recipientFirstName = recipientFirstName;
+    }
+
+    public String getRecipientLastName() {
+        return recipientLastName;
+    }
+
+    public void setRecipientLastName(String recipientLastName) {
+        this.recipientLastName = recipientLastName;
+    }
+
+    public String getRecipientAddress() {
+        return recipientAddress;
+    }
+
+    public void setRecipientAddress(String recipientAddress) {
+        this.recipientAddress = recipientAddress;
+    }
+
+    public String getRecipientEmail() {
+        return recipientEmail;
+    }
+
+    public void setRecipientEmail(String recipientEmail) {
+        this.recipientEmail = recipientEmail;
+    }
+
+    public void setTotal() {
+        calculateTotal();
+    }
+
+    public Set<OrderItem> getOrderItems() {
+        return orderItems;
+    }
+
+    public void setOrderItems(Set<OrderItem> orderItems) {
+        this.orderItems = orderItems;
+        calculateTotal();
     }
 }
